@@ -14,15 +14,7 @@ Console.WriteLine($"Count: {listSize}");
 //for (int i = 0; i < 100;  i++)
 foreach (var item in list)
 {
-    Console.WriteLine($"{item.GetCanonicalName()}\t{item.GetPropertyKey()}");
-    //try
-    //{
-    //    Console.WriteLine($"{item.GetCanonicalName()}\t{item.GetDisplayName()}");
-    //}
-    //catch (COMException come) when (come.HResult == /*E_FAIL*/ unchecked((int)0x80004005))
-    //{
-    //    Console.WriteLine($"{item.GetCanonicalName()}\t<N/A>");
-    //}
+    Console.WriteLine($"{item.GetCanonicalName()}\t{item.GetDisplayName(DisplayNameFallback.Null)}");
 }
 
 Console.WriteLine($"Done! {DateTime.Now - start}");

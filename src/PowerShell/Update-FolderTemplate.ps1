@@ -170,7 +170,22 @@ public class UpdateFolderTemplateNativeHelper
         in Guid riid,
         out IPropertyDescriptionList ppv);
 
-    public static IEnumerable<string> GetAvailableColumns(int filterOn)
+    // https://learn.microsoft.com/en-us/windows/win32/seccrypto/common-hresult-values
+    private const int E_FAIL = unchecked((int)0x80004005);
+
+    public static string GetDisplayName(IPropertyDescription propertyDescription)
+    {
+        try
+        {
+            return propertyDescription.GetDisplayName();
+        }
+        catch (COMException come) when (come.ErrorCode == E_FAIL)
+        {
+            return null;
+        }
+    }
+
+    public static IEnumerable<string[]> GetAvailableColumns(int filterOn)
     {
         Guid guid = typeof(IPropertyDescriptionList).GUID;
         int result = PSEnumeratePropertyDescriptions(filterOn, guid, out IPropertyDescriptionList list);
@@ -180,7 +195,7 @@ public class UpdateFolderTemplateNativeHelper
         {
             guid = typeof(IPropertyDescription).GUID;
             var item = list.GetAt((uint)i, ref guid);
-            yield return item.GetCanonicalName();
+            yield return new string[] { item.GetCanonicalName(), GetDisplayName(item)};
         }
     }
 }
@@ -198,7 +213,7 @@ if ($ListAvailableColumns) {
     try {
         $availableColumns = [UpdateFolderTemplateNativeHelper]::GetAvailableColumns($PROPDESC_ENUMFILTER.PDEF_COLUMN)
         Write-Host "Available columns for folder templates:"
-        $availableColumns
+        $availableColumns | ForEach-Object {[PSCustomObject]@{CanonicalName = $_[0]; DisplayName = $_[1]}}
         # foreach ($column in $availableColumns) {
         #     Write-Output $column
         # }
